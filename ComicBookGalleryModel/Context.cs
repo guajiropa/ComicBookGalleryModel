@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,17 +13,23 @@ namespace ComicBookGalleryModel
     {
         public Context()
         {
-            // Drop and recreate the database if the model has changed.
-            //Database.SetInitializer(new DropCreateDatabaseIfModelChanges<Context>());
-
-            // Create the database if it does not exists.
-            //Database.SetInitializer(new CreateDatabaseIfNotExists<Context>());
-
-            // Drop and create the database everytime that the app is ran
-            Database.SetInitializer(new DropCreateDatabaseAlways<Context>());
+            Database.SetInitializer(new DatabaseInitializer());
         }
 
         public DbSet<ComicBook> ComicBooks { get; set; }
+
+        // Overide the default behaviors of the Entity Frameworks default behavior when creating
+        // the database to better suit or needs (Please note that this can also be accomplished
+        // using data annotations).
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
+            
+            // Format the modelBuilders behavior when creating a decimal field
+            modelBuilder.Entity<ComicBook>()
+                .Property(cb => cb.AverageRating)
+                .HasPrecision(5, 2);
+        }
 
     }
 }
